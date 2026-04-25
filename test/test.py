@@ -10,7 +10,9 @@ from cocotb.triggers import ClockCycles
 async def test_project(dut):
     dut._log.info("Starting Memory Test")
 
-    # Start clock (10us period)
+    # -------------------------
+    # CLOCK
+    # -------------------------
     clock = Clock(dut.clk, 10, unit="us")
     cocotb.start_soon(clock.start())
 
@@ -30,37 +32,38 @@ async def test_project(dut):
     dut._log.info("Reset Done")
 
     # -------------------------
-    # TEST: WRITE + READ
+    # TEST PARAMETERS
     # -------------------------
     addr = 2
     data = 55
 
+    # -------------------------
+    # WRITE OPERATION
+    # -------------------------
     dut._log.info(f"Writing data={data} to addr={addr}")
 
-    # WRITE
-    # ui_in:
-    # bit0 = valid
-    # bit1 = wr_rd (1 = write)
-    # bits[3:2] = addr
+    # valid=1, wr_rd=1 (write), addr in bits [3:2]
     dut.ui_in.value = (addr << 2) | (1 << 1) | 1
     dut.uio_in.value = data
 
-    await ClockCycles(dut.clk, 1)
+    # Hold write for enough cycles (important for gate-level)
+    await ClockCycles(dut.clk, 2)
 
-    # small gap (important for pipeline stability)
+    # Small gap (stabilization)
     dut.ui_in.value = 0
     await ClockCycles(dut.clk, 1)
 
     # -------------------------
-    # READ
+    # READ OPERATION
     # -------------------------
     dut._log.info(f"Reading from addr={addr}")
 
+    # valid=1, wr_rd=0 (read)
     dut.ui_in.value = (addr << 2) | (0 << 1) | 1
     dut.uio_in.value = 0
 
-    # wait for memory latency (1 cycle pipeline)
-    await ClockCycles(dut.clk, 2)
+    # Wait for pipeline + gate delay
+    await ClockCycles(dut.clk, 3)
 
     read_data = int(dut.uio_out.value)
 
