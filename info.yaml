@@ -1,6 +1,6 @@
 # Tiny Tapeout project information
 project:
-  title:        ""      # Project title
+  title:        "memory"      # Project title
   author:       "subiksha"      # Your name
   discord:      ""      # Your discord username, for communication and automatically assigning you a Tapeout role (optional)
   description:  "A simple synchronous memory that supports read and write operations using a valid-ready handshake interface"      # One line description of what your project does
